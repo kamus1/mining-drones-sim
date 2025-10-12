@@ -1,3 +1,49 @@
-[gd_scene format=3 uid="uid://b5gl3uttc3hva"]
+[gd_scene load_steps=6 format=3 uid="uid://b5gl3uttc3hva"]
+
+[ext_resource type="Texture2D" uid="uid://dfcshyq1c1du6" path="res://assets/tiles_32.png" id="1_elqb8"]
+[ext_resource type="Script" uid="uid://b3nu7eogad6eo" path="res://scenes/Mapa.gd" id="2_rvslj"]
+[ext_resource type="Script" uid="uid://ct2ggvxcg5jvw" path="res://scripts/GridOverlay.gd" id="3_grid"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_rvslj"]
+texture = ExtResource("1_elqb8")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+4:0/0 = 0
+5:0/0 = 0
+6:0/0 = 0
+7:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+4:1/0 = 0
+5:1/0 = 0
+6:1/0 = 0
+7:1/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_0bbpv"]
+tile_size = Vector2i(32, 32)
+sources/0 = SubResource("TileSetAtlasSource_rvslj")
 
 [node name="Main" type="Node2D"]
+
+[node name="CentroControl" type="Node2D" parent="."]
+
+[node name="dron" type="Node2D" parent="."]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="TileMap (Mapa)" type="TileMap" parent="."]
+tile_set = SubResource("TileSet_0bbpv")
+format = 2
+script = ExtResource("2_rvslj")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="GridOverlay" type="Node2D" parent="."]
+position = Vector2(-352, -352)
+script = ExtResource("3_grid")
+line_color = Color(0.8217887, 0.82178867, 0.82178867, 1)
