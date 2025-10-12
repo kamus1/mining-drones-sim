@@ -17,12 +17,14 @@ var dirs8 := [
 	Vector2i(1,1), Vector2i(1,-1), Vector2i(-1,1), Vector2i(-1,-1)
 ]
 
+var _rmq_client: RMQClient
+var _channel: RMQChannel
+
 func _ready():
 	map = get_node(map_path)
 	current_cell = start_cell
 	# Coloca el scout en el centro geométrico de la celda
 	global_position = map.to_global(map.cell_to_local(current_cell))
-	queue_redraw()
 	queue_redraw() # para dibujar el círculo
 
 	# Timer de “tick” de exploración
@@ -33,9 +35,35 @@ func _ready():
 	add_child(t)
 	t.timeout.connect(_on_tick)
 
+	# Initialize RMQ
+	_rmq_client = RMQClient.new()
+	var client_open_error := await _rmq_client.open(
+		"localhost",
+		5672,
+		"guest",
+		"guest")
+	if client_open_error != OK:
+		print_debug("Drone RMQ open error: ", client_open_error)
+		return
+
+	_channel = await _rmq_client.channel()
+	var queue_declare := await _channel.queue_declare("ore_queue")
+	if queue_declare[0] != OK:
+		print_debug("Drone queue declare error: ", queue_declare)
+		return
+
 func _draw():
 	# Círculo azul
 	draw_circle(Vector2.ZERO, radius, color)
+
+func _process(_delta: float) -> void:
+	if _rmq_client:
+		_rmq_client.tick()
+
+func _notification(what) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		if _rmq_client:
+			_rmq_client.close()
 
 func _on_tick():
 	_explore_step()
@@ -48,9 +76,14 @@ func _explore_step():
 	if st == map.Cell.GOLD:
 		# Godot no usa console.log, se usa print()
 		print("ORE FOUND at cell: ", current_cell)
+		# Send message
+		if _channel:
+			var publishing_error := await _channel.basic_publish("", "ore_queue", "ore found".to_utf8_buffer())
+			if publishing_error != OK:
+				print_debug("Drone publish error: ", publishing_error)
 
-	# 3) Marcar explorado si no es obstáculo
-	if st != map.Cell.OBSTACLE:
+	# 3) Marcar explorado si es desconocido
+	if st == map.Cell.UNKNOWN:
 		map.set_state_centered(current_cell, map.Cell.EXPLORED)
 
 	# 4) Elegir siguiente celda

@@ -1,8 +1,8 @@
 extends Node2D
 
 @export var cell_size: int = 32
-@export var width: int = 22
-@export var height: int = 22
+@export var width: int = 24
+@export var height: int = 24
 @export var line_color: Color = Color.BLACK
 @export var line_width: float = 1.0
 

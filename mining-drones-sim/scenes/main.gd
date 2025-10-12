@@ -10,9 +10,18 @@ var mapa: TileMap
 func _ready():
 	#limitar fps a 60
 	Engine.max_fps = 60
-	
+
 	mapa = get_node(mapa_path)
+	_create_control_center()
 	_spawn_scouts()
+
+func _create_control_center():
+	var cc := Node2D.new()
+	cc.name = "ControlCenter"
+	cc.position = mapa.control_center_pos * 32
+	var script = load("res://scripts/ControlCenter.gd")
+	cc.set_script(script)
+	add_child(cc)
 
 func _spawn_scouts():
 	var cont := $Drones
@@ -20,7 +29,7 @@ func _spawn_scouts():
 		var s := scout_scene.instantiate()
 		# Usar ruta absoluta para que el dron resuelva el TileMap correctamente
 		s.map_path = mapa.get_path()
-		s.start_cell = Vector2i(0, 0)  # centro de tu grilla "centrada"
+		s.start_cell = mapa.control_center_pos  # centro de control
 		cont.add_child(s)
 
 func _process(delta: float) -> void:
