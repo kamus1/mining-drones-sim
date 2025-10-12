@@ -1,8 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://b5gl3uttc3hva"]
+[gd_scene load_steps=9 format=3 uid="uid://b5gl3uttc3hva"]
 
 [ext_resource type="Texture2D" uid="uid://dfcshyq1c1du6" path="res://assets/tiles_32.png" id="1_elqb8"]
+[ext_resource type="Script" uid="uid://ck0wwbn6tedx1" path="res://scenes/main.gd" id="1_vcsgt"]
+[ext_resource type="PackedScene" uid="uid://c6apdufsro0oi" path="res://scenes/DroneScout.tscn" id="2_c01mt"]
 [ext_resource type="Script" uid="uid://b3nu7eogad6eo" path="res://scenes/Mapa.gd" id="2_rvslj"]
 [ext_resource type="Script" uid="uid://ct2ggvxcg5jvw" path="res://scripts/GridOverlay.gd" id="3_grid"]
+[ext_resource type="Script" uid="uid://dau8v8ib2in17" path="res://scenes/drones.gd" id="4_rarhs"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_rvslj"]
 texture = ExtResource("1_elqb8")
@@ -29,6 +32,9 @@ tile_size = Vector2i(32, 32)
 sources/0 = SubResource("TileSetAtlasSource_rvslj")
 
 [node name="Main" type="Node2D"]
+script = ExtResource("1_vcsgt")
+scout_scene = ExtResource("2_c01mt")
+mapa_path = NodePath("TileMap (Mapa)")
 
 [node name="CentroControl" type="Node2D" parent="."]
 
@@ -46,4 +52,7 @@ script = ExtResource("2_rvslj")
 [node name="GridOverlay" type="Node2D" parent="."]
 position = Vector2(-352, -352)
 script = ExtResource("3_grid")
-line_color = Color(0.8217887, 0.82178867, 0.82178867, 1)
+line_color = Color(0.76240367, 0.76240367, 0.76240367, 1)
+
+[node name="Drones" type="Node2D" parent="."]
+script = ExtResource("4_rarhs")
