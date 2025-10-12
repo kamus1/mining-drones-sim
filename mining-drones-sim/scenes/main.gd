@@ -23,6 +23,14 @@ func _create_control_center():
 	cc.set_script(script)
 	add_child(cc)
 
+func spawn_collector(target: Vector2i):
+	var collector := Node2D.new()
+	collector.name = "CollectorDrone"
+	var script = load("res://scripts/CollectorDrone.gd")
+	collector.set_script(script)
+	collector.set_target(target)
+	$Drones.add_child(collector)
+
 func _spawn_scouts():
 	var cont := $Drones
 	for i in range(num_scouts):

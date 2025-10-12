@@ -76,9 +76,10 @@ func _explore_step():
 	if st == map.Cell.GOLD:
 		# Godot no usa console.log, se usa print()
 		print("ORE FOUND at cell: ", current_cell)
-		# Send message
+		# Send message with coordinates
 		if _channel:
-			var publishing_error := await _channel.basic_publish("", "ore_queue", "ore found".to_utf8_buffer())
+			var msg = "ore:" + str(current_cell.x) + "," + str(current_cell.y)
+			var publishing_error := await _channel.basic_publish("", "ore_queue", msg.to_utf8_buffer())
 			if publishing_error != OK:
 				print_debug("Drone publish error: ", publishing_error)
 

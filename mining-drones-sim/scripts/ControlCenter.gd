@@ -25,7 +25,16 @@ func _ready() -> void:
 			 method: RMQBasicClass.Deliver,
 			 properties: RMQBasicClass.Properties,
 			 body: PackedByteArray):
-			print("ore msg received")
+			var msg = body.get_string_from_utf8()
+			if msg.begins_with("ore:"):
+				var coords_str = msg.substr(4)
+				var coords = coords_str.split(",")
+				if coords.size() == 2:
+					var x = int(coords[0])
+					var y = int(coords[1])
+					print("ore found at coordinates: (", x, ", ", y, ")")
+					# Spawn collector
+					get_parent().spawn_collector(Vector2i(x, y))
 			channel.basic_ack(method.delivery_tag),
 		)
 	if consume[0] != OK:

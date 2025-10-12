@@ -100,8 +100,6 @@ position = Vector2(-384, -384)
 script = ExtResource("3_grid")
 line_color = Color(0.76240367, 0.76240367, 0.76240367, 1)
 
-[node name="Drones" type="Node2D" parent="."]
-
 [node name="CurrentFPS" type="Label" parent="."]
 offset_left = -521.0
 offset_top = -291.0
