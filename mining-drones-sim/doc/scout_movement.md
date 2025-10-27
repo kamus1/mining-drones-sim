@@ -1,22 +1,22 @@
-The drone scout uses a simple stochastic exploration algorithm in the `_explore_step()` function:
+El explorador de drones utiliza un algoritmo simple de exploración estocástica en la función `_explore_step()`:
 
-1. **Current Cell Processing**:
-   - Checks the current cell's state
-   - If it contains gold (`Cell.GOLD`), prints an "ORE FOUND" message
-   - If it's not an obstacle, marks it as explored (`Cell.EXPLORED`)
+1. **Procesamiento de la Celda Actual**:
+   - Verifica el estado de la celda actual
+   - Si contiene un mineral (`Cell.GOLD`, `Cell.SILVER` o `Cell.COPPER`), imprime un mensaje "MINERAL ENCONTRADO" incluyendo el tipo de mineral
+   - Si no es un obstáculo, la marca como explorada (`Cell.EXPLORED`)
 
-2. **Neighbor Selection**:
-   - Considers adjacent cells in 4 directions (or 8 if diagonals are allowed)
-   - Filters out cells that are out of bounds or are obstacles
-   - Creates a list of valid candidate cells
+2. **Selección de Vecinos**:
+   - Considera las celdas adyacentes en 4 direcciones (o 8 si se permiten diagonales)
+   - Filtra las celdas que están fuera de límites o son obstáculos
+   - Crea una lista de celdas candidatas válidas
 
-3. **Decision Making**:
-   - Sorts candidates by cell state in ascending order: UNKNOWN (0) → EXPLORED (1) → GOLD (2)
-   - This prioritizes unexplored areas while allowing some randomness
-   - Randomly selects one candidate from the sorted list
+3. **Toma de Decisiones**:
+   - Ordena los candidatos por estado de celda en orden ascendente: DESCONOCIDO (0) -> EXPLORADO (1) -> casillas de mineral (2)
+   - Esto prioriza áreas inexploradas mientras permite algo de aleatoriedad
+   - Selecciona aleatoriamente un candidato de la lista ordenada
 
-4. **Movement**:
-   - Updates its position to the selected cell
-   - Repeats the process on each timer tick
+4. **Movimiento**:
+   - Actualiza su posición a la celda seleccionada
+   - Repite el proceso en cada tic del temporizador
 
-This creates a random walk behavior that prefers exploring unknown territory but can occasionally revisit explored areas or approach known gold deposits. The algorithm is simple and efficient for basic map exploration without complex pathfinding.
+Esto crea un comportamiento de caminata aleatoria que prefiere explorar territorio desconocido pero puede ocasionalmente revisitar áreas exploradas o acercarse a depósitos de mineral conocidos. El algoritmo es simple y eficiente para exploración básica de mapas sin búsqueda de caminos compleja.

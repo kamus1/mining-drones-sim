@@ -3,7 +3,8 @@ extends Node2D
 
 @export var num_scouts: int = 5
 @export var scout_scene: PackedScene
-@export var mapa_path: NodePath   # arrástrale tu TileMap (Mapa) desde el editor
+@export var collector_scene: PackedScene
+@export var mapa_path: NodePath 
 
 var mapa: TileMap
 
@@ -12,23 +13,27 @@ func _ready():
 	Engine.max_fps = 60
 
 	mapa = get_node(mapa_path)
-	_create_control_center()
 	_spawn_scouts()
 
-func _create_control_center():
-	var cc := Node2D.new()
-	cc.name = "ControlCenter"
-	cc.position = mapa.control_center_pos * 32
-	var script = load("res://scripts/ControlCenter.gd")
-	cc.set_script(script)
-	add_child(cc)
+func spawn_collector(target: Vector2i, ore_type: String, home_cell: Vector2i, collector_color: Color):
+	var collector: Node2D
+	if collector_scene:
+		collector = collector_scene.instantiate()
+	else:
+		collector = Node2D.new()
+		collector.name = "CollectorDrone"
+		var script := load("res://scripts/CollectorDrone.gd")
+		collector.set_script(script)
 
-func spawn_collector(target: Vector2i):
-	var collector := Node2D.new()
-	collector.name = "CollectorDrone"
-	var script = load("res://scripts/CollectorDrone.gd")
-	collector.set_script(script)
-	collector.set_target(target)
+	if collector.has_method("set_map_path"):
+		collector.call("set_map_path", mapa.get_path())
+
+	if collector.name.is_empty():
+		collector.name = "CollectorDrone"
+
+	collector.call("set_home", home_cell)
+	collector.call("set_color", collector_color)
+	collector.call("set_target", target, ore_type)
 	$Drones.add_child(collector)
 
 func _spawn_scouts():
@@ -40,5 +45,5 @@ func _spawn_scouts():
 		s.start_cell = mapa.control_center_pos  # centro de control
 		cont.add_child(s)
 
-func _process(delta: float) -> void:
-	$CurrentFPS.text = "FPS: " + str(Engine.get_frames_per_second())
+func _process(_delta: float) -> void:
+	$CanvasLayer/HUD/CurrentFPS.text = "FPS: " + str(Engine.get_frames_per_second())

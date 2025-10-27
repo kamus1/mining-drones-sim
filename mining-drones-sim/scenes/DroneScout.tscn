@@ -1,6 +1,73 @@
-[gd_scene load_steps=2 format=3 uid="uid://c6apdufsro0oi"]
+[gd_scene load_steps=12 format=3 uid="uid://c6apdufsro0oi"]
 
 [ext_resource type="Script" uid="uid://ywufuonuexdi" path="res://scenes/drone_scout.gd" id="1_lxbik"]
+[ext_resource type="Texture2D" uid="uid://cqyediphm6csv" path="res://assets/Walk_scan.png" id="2_78bcq"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xvp3u"]
+atlas = ExtResource("2_78bcq")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ehcuq"]
+atlas = ExtResource("2_78bcq")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ji8c4"]
+atlas = ExtResource("2_78bcq")
+region = Rect2(96, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ynt2y"]
+atlas = ExtResource("2_78bcq")
+region = Rect2(144, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tgls0"]
+atlas = ExtResource("2_78bcq")
+region = Rect2(192, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_x2bs0"]
+atlas = ExtResource("2_78bcq")
+region = Rect2(240, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_je041"]
+atlas = ExtResource("2_78bcq")
+region = Rect2(288, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3glwp"]
+atlas = ExtResource("2_78bcq")
+region = Rect2(336, 0, 48, 48)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ynt2y"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xvp3u")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ehcuq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ji8c4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ynt2y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tgls0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_x2bs0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_je041")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3glwp")
+}],
+"loop": true,
+"name": &"default",
+"speed": 13.0
+}]
 
 [node name="DroneScout" type="Node2D"]
+texture_filter = 1
 script = ExtResource("1_lxbik")
+sprite_frames = SubResource("SpriteFrames_ynt2y")

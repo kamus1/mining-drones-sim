@@ -47,6 +47,6 @@ func explore_current():
 			var adj_x = cell_x + dx
 			var adj_y = cell_y + dy
 			if adj_x >= 0 and adj_x < map.cells[0].size() and adj_y >= 0 and adj_y < map.cells.size():
-				if map.cells[adj_y][adj_x] == map.Cell.GOLD:
-					print("ore found")
+				if map.is_ore(map.cells[adj_y][adj_x]):
+					print("ore found: ", map.ore_to_string(map.cells[adj_y][adj_x]))
 	map._redraw()

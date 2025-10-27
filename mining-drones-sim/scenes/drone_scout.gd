@@ -1,33 +1,44 @@
-# res://scripts/DroneScout.gd
+# res://scenes/drone_scout.gd
 extends Node2D
 
 @export var tick_seconds: float = 0.15
 @export var allow_diagonals: bool = false
 @export var radius: float = 10.0
-@export var color: Color = Color8(0, 120, 255) # azul
+@export var color: Color = Color8(0, 120, 255) # fallback debug color
+@export var sprite_texture: Texture2D
+@export var sprite_scale: Vector2 = Vector2.ONE
+@export var sprite_frames: SpriteFrames
+@export var animation_name: StringName = &"default"
+@export var move_duration: float = 0.15
 
-@export var start_cell: Vector2i = Vector2i(0, 0)   # celda de inicio (centro)
-@export var map_path: NodePath                      # asigna el TileMap (Mapa) desde el editor o por código
+@export var start_cell: Vector2i = Vector2i(0, 0)   # starting cell (centered grid)
+@export var map_path: NodePath                      # assign the TileMap (Mapa) from the editor or code
 
 var map: TileMap
 var current_cell: Vector2i
-var dirs4 := [Vector2i(1,0), Vector2i(-1,0), Vector2i(0,1), Vector2i(0,-1)]
-var dirs8 := [
-	Vector2i(1,0), Vector2i(-1,0), Vector2i(0,1), Vector2i(0,-1),
-	Vector2i(1,1), Vector2i(1,-1), Vector2i(-1,1), Vector2i(-1,-1)
+var dirs4: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
+var dirs8: Array[Vector2i] = [
+	Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
+	Vector2i(1, 1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(-1, -1)
 ]
 
+var _sprite: Sprite2D
+var _anim_sprite: AnimatedSprite2D
+var _current_animation: StringName = &""
+var _move_tween: Tween
+var _moving := false
 var _rmq_client: RMQClient
 var _channel: RMQChannel
 
 func _ready():
 	map = get_node(map_path)
 	current_cell = start_cell
-	# Coloca el scout en el centro geométrico de la celda
+	# Place the scout in the geometric center of the cell
 	global_position = map.to_global(map.cell_to_local(current_cell))
-	queue_redraw() # para dibujar el círculo
+	_setup_visual()
+	queue_redraw() # debug circle 
 
-	# Timer de “tick” de exploración
+	# Exploration tick timer
 	var t := Timer.new()
 	t.wait_time = tick_seconds
 	t.autostart = true
@@ -41,7 +52,8 @@ func _ready():
 		"localhost",
 		5672,
 		"guest",
-		"guest")
+		"guest"
+	)
 	if client_open_error != OK:
 		print_debug("Drone RMQ open error: ", client_open_error)
 		return
@@ -53,12 +65,15 @@ func _ready():
 		return
 
 func _draw():
-	# Círculo azul
-	draw_circle(Vector2.ZERO, radius, color)
+	if not _sprite and not _anim_sprite:
+		# Default visual helper when no sprite is provided
+		draw_circle(Vector2.ZERO, radius, color)
 
 func _process(_delta: float) -> void:
 	if _rmq_client:
 		_rmq_client.tick()
+	if _anim_sprite and _current_animation != &"" and not _anim_sprite.is_playing():
+		_anim_sprite.play(_current_animation)
 
 func _notification(what) -> void:
 	if what == NOTIFICATION_PREDELETE:
@@ -66,30 +81,31 @@ func _notification(what) -> void:
 			_rmq_client.close()
 
 func _on_tick():
+	if _moving:
+		return
 	_explore_step()
 
 func _explore_step():
-	# 1) Leer estado actual
+	# 1) Read current state
 	var st: int = map.get_state_centered(current_cell)
 
-	# 2) Reportar oro
-	if st == map.Cell.GOLD:
-		# Godot no usa console.log, se usa print()
-		print("ORE FOUND at cell: ", current_cell)
-		# Send message with coordinates
-		if _channel:
-			var msg = "ore:" + str(current_cell.x) + "," + str(current_cell.y)
+	# 2) Report ore if found
+	if map.is_ore(st):
+		var ore_name: String = map.ore_to_string(st)
+		print("ORE FOUND (", ore_name, ") at cell: ", current_cell)
+		if _channel and ore_name != "":
+			var msg := "ore:%s:%d,%d" % [ore_name, current_cell.x, current_cell.y]
 			var publishing_error := await _channel.basic_publish("", "ore_queue", msg.to_utf8_buffer())
 			if publishing_error != OK:
 				print_debug("Drone publish error: ", publishing_error)
 
-	# 3) Marcar explorado si es desconocido
+	# 3) Mark explored if unknown
 	if st == map.Cell.UNKNOWN:
 		map.set_state_centered(current_cell, map.Cell.EXPLORED)
 
-	# 4) Elegir siguiente celda
+	# 4) Choose next cell
 	var candidates: Array[Vector2i] = []
-	var dirs = dirs8 if allow_diagonals else dirs4
+	var dirs: Array[Vector2i] = dirs8 if allow_diagonals else dirs4
 	for d in dirs:
 		var n: Vector2i = current_cell + d
 		if not map.in_bounds_centered(n):
@@ -99,14 +115,75 @@ func _explore_step():
 			candidates.append(n)
 
 	if candidates.is_empty():
-		return # atascado
+		return # stuck
 
-	# Prioriza UNKNOWN, luego aleatorio
+	# Prioritize UNKNOWN, then random fallback
 	candidates.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
 		return map.get_state_centered(a) < map.get_state_centered(b)
 	)
 	var next_cell: Vector2i = candidates.pick_random()
 
-	# 5) "Mover" (salto de celda a celda; simple y determinista)
-	current_cell = next_cell
-	global_position = map.to_global(map.cell_to_local(current_cell))
+	# 5) Move smoothly toward the target cell
+	_start_movement(next_cell)
+
+func _setup_visual() -> void:
+	if sprite_frames:
+		if _sprite:
+			_sprite.queue_free()
+			_sprite = null
+		if not _anim_sprite:
+			_anim_sprite = AnimatedSprite2D.new()
+			_anim_sprite.name = "Visual"
+			_anim_sprite.centered = true
+			_anim_sprite.z_index = 1
+			add_child(_anim_sprite)
+		_anim_sprite.sprite_frames = sprite_frames
+		var available := sprite_frames.get_animation_names()
+		var chosen_animation: StringName = StringName("")
+		if animation_name != StringName("") and available.has(String(animation_name)):
+			chosen_animation = animation_name
+		elif available.size() > 0:
+			chosen_animation = StringName(available[0])
+		_current_animation = chosen_animation
+		if _current_animation != &"":
+			_anim_sprite.play(_current_animation)
+	elif sprite_texture:
+		_current_animation = &""
+		if _anim_sprite:
+			_anim_sprite.queue_free()
+			_anim_sprite = null
+		if not _sprite:
+			_sprite = Sprite2D.new()
+			_sprite.name = "Visual"
+			_sprite.centered = true
+			_sprite.z_index = 1
+			add_child(_sprite)
+		_sprite.texture = sprite_texture
+		_sprite.scale = sprite_scale
+	else:
+		_current_animation = &""
+		if _anim_sprite:
+			_anim_sprite.queue_free()
+			_anim_sprite = null
+		if _sprite:
+			_sprite.queue_free()
+			_sprite = null
+	queue_redraw()
+
+func _start_movement(target_cell: Vector2i) -> void:
+	var target_pos := map.to_global(map.cell_to_local(target_cell))
+	if _move_tween and _move_tween.is_running():
+		_move_tween.kill()
+	if move_duration <= 0.0:
+		global_position = target_pos
+		current_cell = target_cell
+		_moving = false
+		return
+	var final_cell := target_cell
+	_move_tween = create_tween()
+	_move_tween.tween_property(self, "global_position", target_pos, move_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_moving = true
+	_move_tween.finished.connect(func():
+		current_cell = final_cell
+		_moving = false
+	)

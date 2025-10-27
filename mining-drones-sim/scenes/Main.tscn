@@ -1,15 +1,25 @@
-[gd_scene load_steps=8 format=3 uid="uid://b5gl3uttc3hva"]
+[gd_scene load_steps=19 format=3 uid="uid://b5gl3uttc3hva"]
 
 [ext_resource type="Script" uid="uid://ck0wwbn6tedx1" path="res://scenes/main.gd" id="1_vcsgt"]
 [ext_resource type="PackedScene" uid="uid://c6apdufsro0oi" path="res://scenes/DroneScout.tscn" id="2_c01mt"]
+[ext_resource type="PackedScene" uid="uid://dgcv7fow304ii" path="res://scenes/CollectorDrone.tscn" id="2_collector"]
 [ext_resource type="Script" uid="uid://b3nu7eogad6eo" path="res://scenes/Mapa.gd" id="2_rvslj"]
-[ext_resource type="Script" uid="uid://ct2ggvxcg5jvw" path="res://scripts/GridOverlay.gd" id="3_grid"]
+[ext_resource type="Script" uid="uid://dly8snblu32hm" path="res://scripts/GridOverlay.gd" id="3_grid"]
 [ext_resource type="Texture2D" uid="uid://dvc2qvrqji6o8" path="res://assets/tiles_32.png" id="4_nxtc6"]
+[ext_resource type="Script" uid="uid://c735jclntsh0f" path="res://scripts/CameraController.gd" id="5_cam"]
+[ext_resource type="Script" uid="uid://4kruc5mjhgk5" path="res://scripts/ControlCenter.gd" id="6_ctrl"]
+[ext_resource type="Script" uid="uid://dqenym30bmua8" path="res://scripts/QueueDistributionCenter.gd" id="7_qdc"]
+[ext_resource type="Script" uid="uid://bdb212sh4x5kt" path="res://scripts/QueueLogHUD.gd" id="8_loghud"]
+[ext_resource type="Script" uid="uid://wknihlo4pgci" path="res://scripts/ResizableLogPanel.gd" id="9_resize"]
+[ext_resource type="Script" uid="uid://y3246e8386dn" path="res://scripts/CoordsController.gd" id="10_coords"]
+[ext_resource type="Script" uid="uid://bahkbdx876pl4" path="res://scripts/DynamicRouter.gd" id="11_router"]
+[ext_resource type="Script" uid="uid://c5uko1acf7esa" path="res://scripts/FilteredQueueLogHUD.gd" id="12_flog"]
+[ext_resource type="Script" uid="uid://ds5hxxwt8wol4" path="res://scripts/ContentRouterWireTap.gd" id="13_wiretap"]
+[ext_resource type="Script" uid="uid://bjbsnlksb80r7" path="res://scripts/WireTapLogger.gd" id="14_wtaplog"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_nxtc6"]
 texture = ExtResource("4_nxtc6")
 texture_region_size = Vector2i(32, 32)
-0:0/0 = 0
 1:0/0 = 0
 2:0/0 = 0
 3:0/0 = 0
@@ -17,62 +27,15 @@ texture_region_size = Vector2i(32, 32)
 5:0/0 = 0
 6:0/0 = 0
 7:0/0 = 0
-8:0/0 = 0
-9:0/0 = 0
-10:0/0 = 0
-11:0/0 = 0
-12:0/0 = 0
-13:0/0 = 0
-14:0/0 = 0
-15:0/0 = 0
-0:1/0 = 0
-1:1/0 = 0
 2:1/0 = 0
 3:1/0 = 0
 4:1/0 = 0
 5:1/0 = 0
 6:1/0 = 0
 7:1/0 = 0
-8:1/0 = 0
-9:1/0 = 0
-10:1/0 = 0
-11:1/0 = 0
-12:1/0 = 0
-13:1/0 = 0
-14:1/0 = 0
-15:1/0 = 0
-0:2/0 = 0
-1:2/0 = 0
-2:2/0 = 0
-3:2/0 = 0
-4:2/0 = 0
-5:2/0 = 0
-6:2/0 = 0
-7:2/0 = 0
-8:2/0 = 0
-9:2/0 = 0
-10:2/0 = 0
-11:2/0 = 0
-12:2/0 = 0
-13:2/0 = 0
-14:2/0 = 0
-15:2/0 = 0
-0:3/0 = 0
-1:3/0 = 0
-2:3/0 = 0
-3:3/0 = 0
-4:3/0 = 0
-5:3/0 = 0
-6:3/0 = 0
-7:3/0 = 0
-8:3/0 = 0
-9:3/0 = 0
-10:3/0 = 0
-11:3/0 = 0
-12:3/0 = 0
-13:3/0 = 0
-14:3/0 = 0
-15:3/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+0:0/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_jlsqs"]
 tile_size = Vector2i(32, 32)
@@ -81,30 +44,289 @@ sources/0 = SubResource("TileSetAtlasSource_nxtc6")
 [node name="Main" type="Node2D"]
 script = ExtResource("1_vcsgt")
 scout_scene = ExtResource("2_c01mt")
+collector_scene = ExtResource("2_collector")
 mapa_path = NodePath("TileMap (Mapa)")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
+[node name="HUD" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="CurrentFPS" type="Label" parent="CanvasLayer/HUD"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 56.0
+offset_bottom = 39.0
+text = "FPS: "
+
+[node name="QueueLogHUD" type="Control" parent="CanvasLayer/HUD"]
+anchors_preset = 0
+offset_left = 16.0
+offset_top = 60.0
+offset_right = 296.0
+offset_bottom = 340.0
+script = ExtResource("8_loghud")
+
+[node name="LogContainer" type="VBoxContainer" parent="CanvasLayer/HUD/QueueLogHUD"]
+layout_mode = 0
+offset_right = 280.0
+offset_bottom = 280.0
+theme_override_constants/separation = 8
+
+[node name="GoldSection" type="VBoxContainer" parent="CanvasLayer/HUD/QueueLogHUD/LogContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ToggleButton" type="Button" parent="CanvasLayer/HUD/QueueLogHUD/LogContainer/GoldSection"]
+layout_mode = 2
+text = "Show gold queue messages"
+
+[node name="LogPanel" type="PanelContainer" parent="CanvasLayer/HUD/QueueLogHUD/LogContainer/GoldSection"]
+custom_minimum_size = Vector2(220, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("9_resize")
+
+[node name="Log" type="RichTextLabel" parent="CanvasLayer/HUD/QueueLogHUD/LogContainer/GoldSection/LogPanel"]
+visible = false
+layout_mode = 2
+mouse_filter = 1
+bbcode_enabled = true
+
+[node name="SilverSection" type="VBoxContainer" parent="CanvasLayer/HUD/QueueLogHUD/LogContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ToggleButton" type="Button" parent="CanvasLayer/HUD/QueueLogHUD/LogContainer/SilverSection"]
+layout_mode = 2
+text = "Show silver queue messages"
+
+[node name="LogPanel" type="PanelContainer" parent="CanvasLayer/HUD/QueueLogHUD/LogContainer/SilverSection"]
+custom_minimum_size = Vector2(220, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("9_resize")
+
+[node name="Log" type="RichTextLabel" parent="CanvasLayer/HUD/QueueLogHUD/LogContainer/SilverSection/LogPanel"]
+visible = false
+layout_mode = 2
+mouse_filter = 1
+bbcode_enabled = true
+
+[node name="CopperSection" type="VBoxContainer" parent="CanvasLayer/HUD/QueueLogHUD/LogContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ToggleButton" type="Button" parent="CanvasLayer/HUD/QueueLogHUD/LogContainer/CopperSection"]
+layout_mode = 2
+text = "Show copper queue messages"
+
+[node name="LogPanel" type="PanelContainer" parent="CanvasLayer/HUD/QueueLogHUD/LogContainer/CopperSection"]
+custom_minimum_size = Vector2(220, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("9_resize")
+
+[node name="Log" type="RichTextLabel" parent="CanvasLayer/HUD/QueueLogHUD/LogContainer/CopperSection/LogPanel"]
+visible = false
+layout_mode = 2
+mouse_filter = 1
+bbcode_enabled = true
+
+[node name="FilteredQueueLogHUD" type="Control" parent="CanvasLayer/HUD"]
+anchors_preset = 0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -296.0
+offset_top = 60.0
+offset_right = -16.0
+offset_bottom = 340.0
+script = ExtResource("12_flog")
+
+[node name="LogContainer" type="VBoxContainer" parent="CanvasLayer/HUD/FilteredQueueLogHUD"]
+layout_mode = 0
+offset_right = 280.0
+offset_bottom = 280.0
+theme_override_constants/separation = 8
+
+[node name="GoldSection" type="VBoxContainer" parent="CanvasLayer/HUD/FilteredQueueLogHUD/LogContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ToggleButton" type="Button" parent="CanvasLayer/HUD/FilteredQueueLogHUD/LogContainer/GoldSection"]
+layout_mode = 2
+text = "Show gold dispatches"
+
+[node name="LogPanel" type="PanelContainer" parent="CanvasLayer/HUD/FilteredQueueLogHUD/LogContainer/GoldSection"]
+custom_minimum_size = Vector2(220, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("9_resize")
+
+[node name="Log" type="RichTextLabel" parent="CanvasLayer/HUD/FilteredQueueLogHUD/LogContainer/GoldSection/LogPanel"]
+visible = false
+layout_mode = 2
+mouse_filter = 1
+bbcode_enabled = true
+
+[node name="SilverSection" type="VBoxContainer" parent="CanvasLayer/HUD/FilteredQueueLogHUD/LogContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ToggleButton" type="Button" parent="CanvasLayer/HUD/FilteredQueueLogHUD/LogContainer/SilverSection"]
+layout_mode = 2
+text = "Show silver dispatches"
+
+[node name="LogPanel" type="PanelContainer" parent="CanvasLayer/HUD/FilteredQueueLogHUD/LogContainer/SilverSection"]
+custom_minimum_size = Vector2(220, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("9_resize")
+
+[node name="Log" type="RichTextLabel" parent="CanvasLayer/HUD/FilteredQueueLogHUD/LogContainer/SilverSection/LogPanel"]
+visible = false
+layout_mode = 2
+mouse_filter = 1
+bbcode_enabled = true
+
+[node name="CopperSection" type="VBoxContainer" parent="CanvasLayer/HUD/FilteredQueueLogHUD/LogContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ToggleButton" type="Button" parent="CanvasLayer/HUD/FilteredQueueLogHUD/LogContainer/CopperSection"]
+layout_mode = 2
+text = "Show copper dispatches"
+
+[node name="LogPanel" type="PanelContainer" parent="CanvasLayer/HUD/FilteredQueueLogHUD/LogContainer/CopperSection"]
+custom_minimum_size = Vector2(220, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("9_resize")
+
+[node name="Log" type="RichTextLabel" parent="CanvasLayer/HUD/FilteredQueueLogHUD/LogContainer/CopperSection/LogPanel"]
+visible = false
+layout_mode = 2
+mouse_filter = 1
+bbcode_enabled = true
+
 [node name="TileMap (Mapa)" type="TileMap" parent="."]
+texture_filter = 1
 tile_set = SubResource("TileSet_jlsqs")
 format = 2
 script = ExtResource("2_rvslj")
-control_center_pos = Vector2i(-5, -12)
+w = 25
+h = 25
+control_center_pos = Vector2i(0, 0)
 
 [node name="Camera2D" type="Camera2D" parent="."]
 scale = Vector2(-4.08, 6.48)
 zoom = Vector2(0.8, 0.8)
+script = ExtResource("5_cam")
 
 [node name="GridOverlay" type="Node2D" parent="."]
-position = Vector2(-384, -384)
 script = ExtResource("3_grid")
+map_path = NodePath("../TileMap (Mapa)")
 line_color = Color(0.76240367, 0.76240367, 0.76240367, 1)
 
 [node name="Drones" type="Node2D" parent="."]
 
-[node name="CurrentFPS" type="Label" parent="."]
-offset_left = -521.0
-offset_top = -291.0
-offset_right = -481.0
-offset_bottom = -268.0
-text = "FPS: "
+[node name="QueueDistributionCenter" type="Node" parent="."]
+script = ExtResource("7_qdc")
+
+[node name="WireTapLogger" type="Node" parent="."]
+script = ExtResource("14_wtaplog")
+
+[node name="ContentRouterWireTap" type="Node" parent="."]
+script = ExtResource("13_wiretap")
+logger_path = NodePath("../WireTapLogger")
+
+[node name="Routing" type="Node" parent="."]
+
+[node name="GoldCoordsController" type="Node" parent="Routing"]
+script = ExtResource("10_coords")
+
+[node name="GoldDynamicRouter" type="Node" parent="Routing"]
+script = ExtResource("11_router")
+input_queue = "gold_queue"
+output_queue = "gold_output_queue"
+coords_controller_path = NodePath("../GoldCoordsController")
+
+[node name="SilverCoordsController" type="Node" parent="Routing"]
+script = ExtResource("10_coords")
+
+[node name="SilverDynamicRouter" type="Node" parent="Routing"]
+script = ExtResource("11_router")
+input_queue = "silver_queue"
+output_queue = "silver_output_queue"
+coords_controller_path = NodePath("../SilverCoordsController")
+
+[node name="CopperCoordsController" type="Node" parent="Routing"]
+script = ExtResource("10_coords")
+
+[node name="CopperDynamicRouter" type="Node" parent="Routing"]
+script = ExtResource("11_router")
+input_queue = "copper_queue"
+output_queue = "copper_output_queue"
+coords_controller_path = NodePath("../CopperCoordsController")
+
+[node name="GoldControlCenter1" type="Node2D" parent="."]
+script = ExtResource("6_ctrl")
+queue_name = "gold_output_queue"
+home_cell = Vector2i(-12, -10)
+map_path = NodePath("../TileMap (Mapa)")
+collector_color = Color(1, 0.8509804, 0, 1)
+control_cell_state = 7
+control_cell_color = Color(1, 0.8509804, 0, 1)
+
+[node name="GoldControlCenter2" type="Node2D" parent="."]
+script = ExtResource("6_ctrl")
+queue_name = "gold_output_queue"
+home_cell = Vector2i(12, -10)
+map_path = NodePath("../TileMap (Mapa)")
+collector_color = Color(1, 0.85, 0, 1)
+control_cell_state = 7
+control_cell_color = Color(1, 0.8509804, 0, 1)
+
+[node name="SilverControlCenter1" type="Node2D" parent="."]
+script = ExtResource("6_ctrl")
+queue_name = "silver_output_queue"
+home_cell = Vector2i(-12, 0)
+map_path = NodePath("../TileMap (Mapa)")
+collector_color = Color(0.8, 0.8, 0.85, 1)
+control_cell_state = 8
+control_cell_color = Color(0.434018, 0.9100463, 0.9150837, 1)
+
+[node name="SilverControlCenter2" type="Node2D" parent="."]
+script = ExtResource("6_ctrl")
+queue_name = "silver_output_queue"
+home_cell = Vector2i(12, 0)
+map_path = NodePath("../TileMap (Mapa)")
+collector_color = Color(0.8, 0.8, 0.85, 1)
+control_cell_state = 8
+control_cell_color = Color(0.43529412, 0.9098039, 0.9137255, 1)
+
+[node name="CopperControlCenter1" type="Node2D" parent="."]
+script = ExtResource("6_ctrl")
+queue_name = "copper_output_queue"
+home_cell = Vector2i(-12, 10)
+map_path = NodePath("../TileMap (Mapa)")
+collector_color = Color(0.72, 0.37, 0.18, 1)
+control_cell_state = 9
+control_cell_color = Color(0.94509804, 0.5176471, 0.13333334, 1)
+
+[node name="CopperControlCenter2" type="Node2D" parent="."]
+script = ExtResource("6_ctrl")
+queue_name = "copper_output_queue"
+home_cell = Vector2i(12, 10)
+map_path = NodePath("../TileMap (Mapa)")
+collector_color = Color(0.72, 0.37, 0.18, 1)
+control_cell_state = 9
+control_cell_color = Color(0.94509804, 0.5176471, 0.13333334, 1)

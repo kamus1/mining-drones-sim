@@ -1,0 +1,119 @@
+[gd_scene load_steps=18 format=3 uid="uid://dgcv7fow304ii"]
+
+[ext_resource type="Script" uid="uid://du1tjy7bapua1" path="res://scripts/CollectorDrone.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cqyediphm6csv" path="res://assets/Walk_scan.png" id="2_walk"]
+[ext_resource type="Texture2D" uid="uid://cd5t7f64kpcpe" path="res://assets/Walk.png" id="3_qg4qa"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_frame0"]
+atlas = ExtResource("2_walk")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_frame1"]
+atlas = ExtResource("2_walk")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_frame2"]
+atlas = ExtResource("2_walk")
+region = Rect2(96, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_frame3"]
+atlas = ExtResource("2_walk")
+region = Rect2(144, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_frame4"]
+atlas = ExtResource("2_walk")
+region = Rect2(192, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_frame5"]
+atlas = ExtResource("2_walk")
+region = Rect2(240, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_frame6"]
+atlas = ExtResource("2_walk")
+region = Rect2(288, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_frame7"]
+atlas = ExtResource("2_walk")
+region = Rect2(336, 0, 48, 48)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_default"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_frame0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_frame1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_frame2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_frame3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_frame4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_frame5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_frame6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_frame7")
+}],
+"loop": true,
+"name": &"default",
+"speed": 13.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vq8a6"]
+atlas = ExtResource("3_qg4qa")
+region = Rect2(0, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5wgur"]
+atlas = ExtResource("3_qg4qa")
+region = Rect2(96, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shxji"]
+atlas = ExtResource("3_qg4qa")
+region = Rect2(192, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5jbr2"]
+atlas = ExtResource("3_qg4qa")
+region = Rect2(288, 0, 96, 96)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_l222v"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vq8a6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5wgur")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shxji")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5jbr2")
+}],
+"loop": true,
+"name": &"default",
+"speed": 10.0
+}]
+
+[node name="CollectorDrone" type="Node2D"]
+script = ExtResource("1_script")
+default_sprite_frames = SubResource("SpriteFrames_default")
+default_sprite_scale = Vector2(0.67, 0.67)
+gold_sprite_frames = SubResource("SpriteFrames_l222v")
+gold_sprite_scale = Vector2(0.67, 0.67)
+gold_modulate = Color(1, 0.9882353, 0.14901961, 1)
+silver_sprite_frames = SubResource("SpriteFrames_l222v")
+silver_sprite_scale = Vector2(0.67, 0.67)
+silver_modulate = Color(0.5294118, 0.8784314, 1, 1)
+copper_sprite_frames = SubResource("SpriteFrames_l222v")
+copper_sprite_scale = Vector2(0.67, 0.67)
+copper_modulate = Color(0.9764706, 0.21568628, 0, 1)
