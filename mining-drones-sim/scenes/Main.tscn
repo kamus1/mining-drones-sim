@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://b5gl3uttc3hva"]
+[gd_scene load_steps=20 format=3 uid="uid://b5gl3uttc3hva"]
 
 [ext_resource type="Script" uid="uid://ck0wwbn6tedx1" path="res://scenes/main.gd" id="1_vcsgt"]
 [ext_resource type="PackedScene" uid="uid://c6apdufsro0oi" path="res://scenes/DroneScout.tscn" id="2_c01mt"]
@@ -16,6 +16,7 @@
 [ext_resource type="Script" uid="uid://c5uko1acf7esa" path="res://scripts/FilteredQueueLogHUD.gd" id="12_flog"]
 [ext_resource type="Script" uid="uid://ds5hxxwt8wol4" path="res://scripts/ContentRouterWireTap.gd" id="13_wiretap"]
 [ext_resource type="Script" uid="uid://bjbsnlksb80r7" path="res://scripts/WireTapLogger.gd" id="14_wtaplog"]
+[ext_resource type="Script" path="res://scripts/MapBackground.gd" id="15_bg"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_nxtc6"]
 texture = ExtResource("4_nxtc6")
@@ -216,6 +217,12 @@ visible = false
 layout_mode = 2
 mouse_filter = 1
 bbcode_enabled = true
+
+[node name="MapBackground" type="Node2D" parent="."]
+script = ExtResource("15_bg")
+map_path = NodePath("../TileMap (Mapa)")
+color = Color(1, 1, 1, 1)
+padding = Vector2(0, 0)
 
 [node name="TileMap (Mapa)" type="TileMap" parent="."]
 texture_filter = 1

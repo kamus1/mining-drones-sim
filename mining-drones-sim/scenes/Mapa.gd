@@ -1,5 +1,7 @@
 extends TileMap
 
+signal map_config_updated
+
 enum Cell {
 	UNKNOWN,
 	EXPLORED,
@@ -59,6 +61,7 @@ func generate_random_map(width: int, height: int, p_gold: float = gold_ratio, p_
 	if idx_y >= 0 and idx_y < h + 4 and idx_x >= 0 and idx_x < w + 4:
 		cells[idx_y][idx_x] = Cell.CONTROL_CENTER
 	_redraw()
+	emit_signal("map_config_updated")
 
 func _redraw() -> void:
 	clear()

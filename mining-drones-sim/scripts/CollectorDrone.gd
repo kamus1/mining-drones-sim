@@ -38,6 +38,17 @@ extends Node2D
 @export var use_nearest_filter: bool = true
 @export_group("")
 
+@export_group("Carry Visual")
+@export var carry_texture: Texture2D = preload("res://assets/tiles_32.png")
+@export var carry_default_region: Rect2i = Rect2i(32, 0, 32, 32)
+@export var carry_gold_region: Rect2i = Rect2i(64, 0, 32, 32)
+@export var carry_silver_region: Rect2i = Rect2i(32, 32, 32, 32)
+@export var carry_copper_region: Rect2i = Rect2i(0, 32, 32, 32)
+@export var carry_offset: Vector2 = Vector2(0.0, 20.0)
+@export var carry_scale: Vector2 = Vector2(0.6, 0.6)
+@export var carry_modulate: Color = Color.WHITE
+@export var carry_z_index: int = 0
+
 var map: TileMap
 var current_cell: Vector2i
 var target_cell: Vector2i
@@ -51,6 +62,7 @@ var _sprite: Sprite2D
 var _anim_sprite: AnimatedSprite2D
 var _visual_dirty: bool = true
 var _was_near_target: bool = false
+var _carry_sprite: Sprite2D
 
 func _ready():
 	_resolve_map()
@@ -99,6 +111,8 @@ func set_target(t: Vector2i, ore_name: String = ""):
 	ore_type = ore_name.to_lower()
 	_has_target = true
 	_visual_dirty = true
+	state = "going_to_ore"
+	_set_carry_visual_enabled(false)
 
 func set_home(home: Vector2i) -> void:
 	home_cell = home
@@ -125,10 +139,12 @@ func _on_reached_target():
 			map.set_state_centered(target_cell, map.Cell.EXPLORED)
 		print("Collector obtained ", ore_type, " at ", target_cell)
 		target_cell = home_cell
+		_set_carry_visual_enabled(true)
 		_has_target = true
 		state = "returning"
 	elif state == "returning":
 		print("Collector returned to control center")
+		_set_carry_visual_enabled(false)
 		queue_free()
 
 func _refresh_visual() -> void:
@@ -229,6 +245,66 @@ func _set_filter(node: CanvasItem) -> void:
 		node.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	else:
 		node.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+
+func _set_carry_visual_enabled(enabled: bool) -> void:
+	if not enabled:
+		if _carry_sprite:
+			_carry_sprite.visible = false
+		return
+
+	if ore_type.is_empty():
+		return
+
+	_ensure_carry_sprite()
+	_apply_carry_texture(ore_type)
+	if _carry_sprite:
+		_carry_sprite.visible = true
+
+func _ensure_carry_sprite() -> void:
+	if _carry_sprite:
+		return
+	_carry_sprite = Sprite2D.new()
+	_carry_sprite.name = "CarriedOre"
+	_carry_sprite.centered = true
+	_carry_sprite.position = carry_offset
+	_carry_sprite.scale = carry_scale
+	_carry_sprite.self_modulate = carry_modulate
+	_carry_sprite.z_index = carry_z_index
+	add_child(_carry_sprite)
+	_set_filter(_carry_sprite)
+
+func _apply_carry_texture(ore: String) -> void:
+	if not _carry_sprite:
+		return
+	if not carry_texture:
+		_carry_sprite.visible = false
+		return
+
+	var region := _carry_region_for_ore(ore)
+	if region.size == Vector2i.ZERO:
+		_carry_sprite.texture = carry_texture
+		_carry_sprite.region_enabled = false
+	else:
+		var atlas := AtlasTexture.new()
+		atlas.atlas = carry_texture
+		atlas.region = Rect2(region.position, region.size)
+		_carry_sprite.texture = atlas
+		_carry_sprite.region_enabled = false
+
+	_carry_sprite.position = carry_offset
+	_carry_sprite.scale = carry_scale
+	_carry_sprite.self_modulate = carry_modulate
+
+func _carry_region_for_ore(ore: String) -> Rect2i:
+	match ore:
+		"gold":
+			return carry_gold_region
+		"silver":
+			return carry_silver_region
+		"copper":
+			return carry_copper_region
+		_:
+			return carry_default_region
 
 func _resolve_map() -> void:
 	if map_path == NodePath(""):
