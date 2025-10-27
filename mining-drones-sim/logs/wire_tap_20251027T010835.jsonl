@@ -1,0 +1,6 @@
+{"component":"WireTapLogger","event":"session_start","timestamp":"2025-10-27T01:08:35"}
+{"component":"ContentRouterWireTap","coords":{"x":-2,"y":-3},"event":"main_queue","ore_type":"silver","queue":"silver_queue","timestamp":"2025-10-27T01:08:39"}
+{"component":"ContentRouterWireTap","coords":{"x":-2,"y":-3},"event":"forwarded","ore_type":"silver","queue":"silver_output_queue","timestamp":"2025-10-27T01:08:39"}
+{"component":"ContentRouterWireTap","consumer":"SilverControlCenter2","coords":{"x":-2,"y":-3},"event":"consumed","ore_type":"silver","queue":"silver_output_queue","timestamp":"2025-10-27T01:08:39"}
+{"component":"ContentRouterWireTap","coords":{"x":-2,"y":-3},"event":"main_queue","ore_type":"silver","queue":"silver_queue","timestamp":"2025-10-27T01:08:40"}
+{"component":"WireTapLogger","event":"session_end","timestamp":"2025-10-27T01:08:42"}
