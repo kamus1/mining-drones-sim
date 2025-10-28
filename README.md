@@ -1,6 +1,6 @@
-# Simulación de Drones Mineros
+# Mining Drones Simulation
 
-![Simulación de Drones Mineros](https://raw.githubusercontent.com/kamus1/mining-drones-sim/main/docs/dron-square.gif)
+![Mining drones simulation](https://raw.githubusercontent.com/kamus1/mining-drones-sim/main/docs/dron-square.gif)
 
 ## Descripción
 
