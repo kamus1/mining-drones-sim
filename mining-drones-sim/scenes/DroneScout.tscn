@@ -1,6 +1,6 @@
 [gd_scene load_steps=12 format=3 uid="uid://c6apdufsro0oi"]
 
-[ext_resource type="Script" uid="uid://ywufuonuexdi" path="res://scenes/drone_scout.gd" id="1_lxbik"]
+[ext_resource type="Script" uid="uid://ywufuonuexdi" path="res://scripts/drone_scout.gd" id="1_lxbik"]
 [ext_resource type="Texture2D" uid="uid://cqyediphm6csv" path="res://assets/Walk_scan.png" id="2_78bcq"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_xvp3u"]

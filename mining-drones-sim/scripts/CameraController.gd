@@ -8,6 +8,7 @@ extends Camera2D
 
 var _dragging := false
 
+# funcion para gesto drag en la camara al mantener presionado el mouse
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == drag_button:
 		_dragging = event.pressed
@@ -23,6 +24,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		global_position -= delta
 		get_viewport().set_input_as_handled()
 
+# función para hacer zoom con la rueda del mouse
 func _apply_zoom(direction: int) -> void:
 	if zoom_multiplier <= 0.0:
 		return

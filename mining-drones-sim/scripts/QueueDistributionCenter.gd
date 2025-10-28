@@ -1,34 +1,43 @@
 extends Node
+# este es el componente que representa al Content-Based Router del diagrama EIP
 
+# configuración de conexión a RabbitMQ
 @export var host: String = "localhost"
 @export var port: int = 5672
 @export var username: String = "guest"
 @export var password: String = "guest"
 
+# nombres de las colas involucradas
 const SOURCE_QUEUE := "ore_queue"
 const GOLD_QUEUE := "gold_queue"
 const SILVER_QUEUE := "silver_queue"
 const COPPER_QUEUE := "copper_queue"
 
+# cliente y canal de RabbitMQ
 var _rmq_client: RMQClient
 var _channel: RMQChannel
 
 func _ready() -> void:
 	_rmq_client = RMQClient.new()
 
+	# se establece la conexión con RabbitMQ
 	var client_open_error := await _rmq_client.open(host, port, username, password)
 	if client_open_error != OK:
 		print_debug("QueueDistributionCenter RMQ open error: ", client_open_error)
 		return
 
-	_channel = await _rmq_client.channel()
+	_channel = await _rmq_client.channel() # se crea un canal de comunicación
 
+	# se aseguran las colas necesarias
 	if not await _ensure_queue(SOURCE_QUEUE):
 		return
 	for queue_name in [GOLD_QUEUE, SILVER_QUEUE, COPPER_QUEUE]:
 		if not await _ensure_queue(queue_name):
 			return
 
+	# se comienza a consumir mensajes de la cola fuente
+	# cada mensaje es procesado para determinar su tipo y reenviado a la cola correspondiente
+	# el ack se envía luego de publicar el mensaje en la cola destino
 	var consume := await _channel.basic_consume(
 		SOURCE_QUEUE,
 		func(channel: RMQChannel,

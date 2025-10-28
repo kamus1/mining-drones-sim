@@ -1,16 +1,21 @@
 extends Node2D
 
-const MapScript := preload("res://scenes/Mapa.gd")
+const MapScript := preload("res://scripts/Mapa.gd")
 
+# RabbitMQ GDNative module data configuration
 @export var host: String = "localhost"
 @export var port: int = 5672
 @export var username: String = "guest"
 @export var password: String = "guest"
-@export var queue_name: String = ""
+@export var queue_name: String = "" # el nombre de la cola se define en el editor del proyecto, depende de que tipo es el centro de control
+
+
+# Control Center configuration
 @export var home_cell: Vector2i = Vector2i.ZERO
 @export var map_path: NodePath
 @export var collector_color: Color = Color.RED
 
+# variables para la personalización del centro de control
 var _control_cell_state: int = MapScript.Cell.CONTROL_CENTER
 var _control_cell_color: Color = Color(0.18, 0.62, 1.0, 1.0)
 var _use_color_overlay: bool = true
@@ -53,9 +58,11 @@ var _control_sprite_scale: Vector2 = Vector2.ONE
 		_control_sprite_scale = value
 		_apply_custom_sprite()
 
+# variables para la conexión RabbitMQ
 var _rmq_client: RMQClient
 var _channel: RMQChannel
 var _map: TileMap
+
 
 func _ready() -> void:
 	_map = get_node_or_null(map_path)

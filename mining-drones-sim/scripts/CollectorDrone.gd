@@ -1,6 +1,9 @@
 # res://scripts/CollectorDrone.gd
 extends Node2D
 
+# recolector está pensado para reutilizarse desde el editor como una escena flexible. 
+# todos esos @export permiten ajustar su comportamiento y aspecto sin tocar código
+# para todos los drones recolectores  
 @export var speed: float = 100.0
 @export var radius: float = 10.0
 @export var color: Color = Color.RED
@@ -99,6 +102,7 @@ func _process(delta: float):
 		_was_near_target = false
 
 func _draw():
+	# dibuja un circulo si no tiene sprite
 	if not _sprite and not _anim_sprite:
 		draw_circle(Vector2.ZERO, radius, color)
 
@@ -106,6 +110,7 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_ENTER_TREE and _visual_dirty:
 		_refresh_visual()
 
+# establece el objetivo del dron recolector
 func set_target(t: Vector2i, ore_name: String = ""):
 	target_cell = t
 	ore_type = ore_name.to_lower()
@@ -114,15 +119,18 @@ func set_target(t: Vector2i, ore_name: String = ""):
 	state = "going_to_ore"
 	_set_carry_visual_enabled(false)
 
+# establece la posición del centro de control (hogar) al que debe regresar el dron
 func set_home(home: Vector2i) -> void:
 	home_cell = home
 	_home_assigned = true
 
+#  color del dron recolector
 func set_color(new_color: Color) -> void:
 	color = new_color
 	_visual_dirty = true
 	queue_redraw()
 
+# establece el nodo del mapa 
 func set_map_path(path: NodePath) -> void:
 	map_path = path
 	if is_inside_tree():
@@ -131,9 +139,12 @@ func set_map_path(path: NodePath) -> void:
 		call_deferred("_resolve_map")
 	_visual_dirty = true
 
+# maneja las acciones del dron al momento de llegar a su objetivo: su ore o el centro de control
 func _on_reached_target():
 	current_cell = target_cell
 
+	# si su estado es "going_to_ore", marca la celda como explorada, cambia su objetivo al centro de control,
+	# activa la visualización del mineral que lleva y cambia su estado a "returning"
 	if state == "going_to_ore":
 		if map and map.is_ore(map.get_state_centered(target_cell)):
 			map.set_state_centered(target_cell, map.Cell.EXPLORED)
@@ -142,17 +153,20 @@ func _on_reached_target():
 		_set_carry_visual_enabled(true)
 		_has_target = true
 		state = "returning"
+	# si su estado es "returning", desactiva la visualización del mineral y se elimina a sí mismo de la escena
 	elif state == "returning":
 		print("Collector returned to control center")
 		_set_carry_visual_enabled(false)
 		queue_free()
 
+# actualiza la visual del dron según el tipo de mineral que está recolectando
 func _refresh_visual() -> void:
 	if not is_inside_tree():
 		return
 	_apply_visual_for_ore(ore_type)
 	_visual_dirty = false
 
+# aplica la visualización adecuada según el tipo de mineral
 func _apply_visual_for_ore(ore: String) -> void:
 	var config: Dictionary = _get_visual_for_ore(ore)
 	var target_scale: Vector2 = config.get("scale", Vector2.ONE)
@@ -168,6 +182,7 @@ func _apply_visual_for_ore(ore: String) -> void:
 	else:
 		_clear_visuals()
 
+# usa un sprite animado como visual del dron
 func _use_animated_visual(frames: SpriteFrames, animation: StringName, sprite_scale: Vector2, sprite_modulate: Color) -> void:
 	if _sprite:
 		_sprite.queue_free()
@@ -192,6 +207,7 @@ func _use_animated_visual(frames: SpriteFrames, animation: StringName, sprite_sc
 	_anim_sprite.self_modulate = sprite_modulate
 	_set_filter(_anim_sprite)
 
+# funcion para usar una textura estática como visual del dron si no tiene animación
 func _use_static_visual(texture: Texture2D, sprite_scale: Vector2, sprite_modulate: Color) -> void:
 	if _anim_sprite:
 		_anim_sprite.queue_free()
@@ -209,6 +225,7 @@ func _use_static_visual(texture: Texture2D, sprite_scale: Vector2, sprite_modula
 	_sprite.self_modulate = sprite_modulate
 	_set_filter(_sprite)
 
+# limpia cualquier visual/sprite existente del dron
 func _clear_visuals() -> void:
 	if _anim_sprite:
 		_anim_sprite.queue_free()
@@ -217,6 +234,9 @@ func _clear_visuals() -> void:
 		_sprite.queue_free()
 		_sprite = null
 
+# obtiene la configuración visual adecuada según el tipo de mineral
+# es decir, devuelve los sprites, texturas, escalas y colores correctos
+# según el mineral que se le pase
 func _get_visual_for_ore(ore: String) -> Dictionary:
 	match ore:
 		"gold":
@@ -228,6 +248,7 @@ func _get_visual_for_ore(ore: String) -> Dictionary:
 		_:
 			return _visual_dict(default_sprite_frames, default_animation, default_texture, default_sprite_scale, default_modulate)
 
+# crea un diccionario con la configuración visual
 func _visual_dict(frames: SpriteFrames, animation: StringName, texture: Texture2D, sprite_scale: Vector2, sprite_modulate: Color) -> Dictionary:
 	return {
 		"frames": frames,
@@ -237,15 +258,20 @@ func _visual_dict(frames: SpriteFrames, animation: StringName, texture: Texture2
 		"modulate": sprite_modulate
 	}
 
+# combina dos colores multiplicando sus componentes RGBA
+# se utiliza para aplicar el color de modulación a los sprites
+# --> el color base del dron se mezcla con el color específico del mineral
 func _combine_colors(a: Color, b: Color) -> Color:
 	return Color(a.r * b.r, a.g * b.g, a.b * b.b, a.a * b.a)
 
+# establece el filtro de textura (nearest o linear) según la configuración
 func _set_filter(node: CanvasItem) -> void:
 	if use_nearest_filter:
 		node.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	else:
 		node.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 
+# activa o desactiva la visualización del mineral que lleva el dron
 func _set_carry_visual_enabled(enabled: bool) -> void:
 	if not enabled:
 		if _carry_sprite:
@@ -260,6 +286,7 @@ func _set_carry_visual_enabled(enabled: bool) -> void:
 	if _carry_sprite:
 		_carry_sprite.visible = true
 
+# asegura que el sprite del mineral que lleva el dron exista
 func _ensure_carry_sprite() -> void:
 	if _carry_sprite:
 		return
@@ -273,6 +300,7 @@ func _ensure_carry_sprite() -> void:
 	add_child(_carry_sprite)
 	_set_filter(_carry_sprite)
 
+# aplica la textura adecuada al sprite del mineral que lleva el dron
 func _apply_carry_texture(ore: String) -> void:
 	if not _carry_sprite:
 		return
@@ -295,6 +323,7 @@ func _apply_carry_texture(ore: String) -> void:
 	_carry_sprite.scale = carry_scale
 	_carry_sprite.self_modulate = carry_modulate
 
+# obtiene la región de la textura adecuada según el tipo de mineral
 func _carry_region_for_ore(ore: String) -> Rect2i:
 	match ore:
 		"gold":
@@ -306,6 +335,7 @@ func _carry_region_for_ore(ore: String) -> Rect2i:
 		_:
 			return carry_default_region
 
+# resuelve el nodo del mapa según la ruta proporcionada o busca en la escena actual
 func _resolve_map() -> void:
 	if map_path == NodePath(""):
 		return

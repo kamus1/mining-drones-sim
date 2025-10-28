@@ -22,11 +22,14 @@ var dirs8: Array[Vector2i] = [
 	Vector2i(1, 1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(-1, -1)
 ]
 
+# Visual variables
 var _sprite: Sprite2D
 var _anim_sprite: AnimatedSprite2D
 var _current_animation: StringName = &""
 var _move_tween: Tween
 var _moving := false
+
+# RabbitMQ variables
 var _rmq_client: RMQClient
 var _channel: RMQChannel
 

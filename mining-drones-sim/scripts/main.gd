@@ -15,6 +15,7 @@ func _ready():
 	mapa = get_node(mapa_path)
 	_spawn_scouts()
 
+# función para spawnear drones recolectores en el mapa
 func spawn_collector(target: Vector2i, ore_type: String, home_cell: Vector2i, collector_color: Color):
 	var collector: Node2D
 	if collector_scene:
